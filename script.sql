@@ -1,7 +1,8 @@
 DROP TABLE IF EXISTS public.User, public.Reservation, public.Accomodation, 
 	public.Reservation_Accomodation, public.Object, public.Partner, 
 	public.Comment, public.Category, public.Comment_Category, 
-	public.Service, public.Service_Object, public.Facility, public.Facility_Type, public.Facility_Object;
+	public.Service, public.Service_Object, public.Facility, public.Facility_Type, public.Facility_Object, 
+	public.Furniture_Accomodation, public.Furniture, public.Object_Type;
 
 CREATE TABLE IF NOT EXISTS public.User(
 	id SERIAL PRIMARY KEY,
@@ -30,16 +31,28 @@ CREATE TABLE IF NOT EXISTS public.Partner(
 	email_address varchar(128) NOT NULL,
 	phone_number varchar(32) NOT NULL,
 	first_name varchar(128) NOT NULL,
-	last_name varchar(128 NOT NULL)
+	last_name varchar(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.Object_Type(
+	id SERIAL PRIMARY KEY,
+	name varchar(128) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.Object(
 	id SERIAL PRIMARY KEY,
 	location varchar(128) NOT NULL,
-	type varchar(128) NOT NULL,
+	type_id int NOT NULL,
 	rating real,
 	partner_id int NOT NULL,
-	FOREIGN KEY (partner_id) REFERENCES public.Partner (id)
+	FOREIGN KEY (partner_id) REFERENCES public.Partner (id),
+	FOREIGN KEY (type_id) REFERENCES public.Object_Type (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.Furniture(
+	id SERIAL PRIMARY KEY,
+	type varchar(128),
+	name varchar(128) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.Accomodation(
@@ -54,6 +67,15 @@ CREATE TABLE IF NOT EXISTS public.Accomodation(
 	photo varchar(256),
 	object_id int NOT NULL,
 	FOREIGN KEY (object_id) REFERENCES public.Object (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.Furniture_Accomodation(
+	id SERIAL PRIMARY KEY,
+	quantity int,
+	furniture_id int,
+	accomodation_id int,
+	FOREIGN KEY (furniture_id) REFERENCES public.Furniture (id),
+	FOREIGN KEY (accomodation_id) REFERENCES public.Accomodation (id)
 );
 
 CREATE TABLE IF NOT EXISTS public.Reservation_Accomodation(
