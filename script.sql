@@ -57,13 +57,12 @@ CREATE TABLE IF NOT EXISTS public.Furniture(
 
 CREATE TABLE IF NOT EXISTS public.Accomodation(
 	id SERIAL PRIMARY KEY,
-	checkin_time timestamp with time zone,
+	checkin_time time,
 	name varchar(64) NOT NULL,
 	people_number int,
 	area int,
 	restrictions text,
-	price real NOT NULL,
-	furniture text,
+	price money NOT NULL,
 	photo varchar(256),
 	object_id int NOT NULL,
 	FOREIGN KEY (object_id) REFERENCES public.Object (id)
@@ -89,19 +88,17 @@ CREATE TABLE IF NOT EXISTS public.Reservation_Accomodation(
 CREATE TABLE IF NOT EXISTS public.Comment(
 	id SERIAL PRIMARY KEY,
 	photo varchar(128),
-	arrival_date  date NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	rating real NOT NULL,
-	nights_number int,
 	pluses text[],
 	minuses text[],
 	plus_number int,
 	minus_number int,
 	residents int,
 	owner_id int NOT NULL,
-	object_id int NOT NULL,
-	FOREIGN KEY (owner_id) REFERENCES public.User (id),
-	FOREIGN KEY (object_id) REFERENCES public.Object (id)
+	reservation_id int NOT NULL,
+	FOREIGN KEY (reservation_id) REFERENCES public.Reservation (id),
+	FOREIGN KEY (owner_id) REFERENCES public.User (id)
 );
 
 CREATE TABLE IF NOT EXISTS public.Category(
