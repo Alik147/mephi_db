@@ -65,12 +65,14 @@ class DbFiller:
         partners = (self.cursor.fetchall())
         self.cursor.execute('SELECT * FROM public.object_type')
         object_types = self.cursor.fetchall()
+        name = self.faker.word() + ' ' + self.faker.word()
         if len(partners) and len(object_types):
             self.cursor.execute(
-                'INSERT INTO public.object (location, type_id, partner_id)\
-                    VALUES (%s, %s, %s)',
+                'INSERT INTO public.object (location, type_id, name, partner_id)\
+                    VALUES (%s, %s, %s, %s)',
                     (self.faker.address(),
                      random.choice(object_types)[0],
+                     name,
                     #  float(random.randint(0, 9)) + float(random.randint(0,9))/10,
                      random.choice(partners)[0]
                      )
@@ -78,7 +80,6 @@ class DbFiller:
             
     def __create_accomodation(self):
         checkin_time = str(random.randint(6, 20)) + ':00'
-        name = self.faker.word() + ' ' + self.faker.word()
         people_number = random.randint(1, 5)
         area = random.randint(20, 100)
         price = random.randrange(500, 10000, 100)
@@ -89,8 +90,8 @@ class DbFiller:
         self.cursor.execute(
             'INSERT INTO public.accomodation \
                 (checkin_time, name, people_number, area, price, photo, object_id)\
-                VALUES (%s, %s, %s, %s, %s, %s, %s)',
-                (checkin_time, name, people_number, area, price, photo, object_id)
+                VALUES (%s, %s, %s, %s, %s, %s)',
+                (checkin_time, people_number, area, price, photo, object_id)
         )
     
     def __create_comment(self):

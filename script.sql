@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS public.Object_Type(
 
 CREATE TABLE IF NOT EXISTS public.Object(
 	id SERIAL PRIMARY KEY,
+	name varchar(64) NOT NULL,
 	location varchar(128) NOT NULL,
 	type_id int NOT NULL,
 	rating real,
@@ -58,7 +59,6 @@ CREATE TABLE IF NOT EXISTS public.Furniture(
 CREATE TABLE IF NOT EXISTS public.Accomodation(
 	id SERIAL PRIMARY KEY,
 	checkin_time time,
-	name varchar(64) NOT NULL,
 	people_number int,
 	area int,
 	restrictions text,
