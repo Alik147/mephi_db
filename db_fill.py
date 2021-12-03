@@ -89,7 +89,7 @@ class DbFiller:
         object_id = random.choice(objects)[0]
         self.cursor.execute(
             'INSERT INTO public.accomodation \
-                (checkin_time, name, people_number, area, price, photo, object_id)\
+                (checkin_time, people_number, area, price, photo, object_id)\
                 VALUES (%s, %s, %s, %s, %s, %s)',
                 (checkin_time, people_number, area, price, photo, object_id)
         )
