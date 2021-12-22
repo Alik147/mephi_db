@@ -1,8 +1,8 @@
-DROP TABLE IF EXISTS public.User, public.Reservation, public.Accomodation, 
-	public.Reservation_Accomodation, public.Object, public.Partner, 
+DROP TABLE IF EXISTS public.User, public.Reservation, public.Accommodation, 
+	public.Reservation_Accommodation, public.Object, public.Partner, 
 	public.Comment, public.Category, public.Comment_Category, 
 	public.Service, public.Service_Object, public.Facility, public.Facility_Type, public.Facility_Object, 
-	public.Furniture_Accomodation, public.Furniture, public.Object_Type;
+	public.Furniture_Accommodation, public.Furniture, public.Object_Type;
 
 CREATE TABLE IF NOT EXISTS public.User(
 	id SERIAL PRIMARY KEY,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.Furniture(
 	name varchar(128) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS public.Accomodation(
+CREATE TABLE IF NOT EXISTS public.Accommodation(
 	id SERIAL PRIMARY KEY,
 	checkin_time time,
 	people_number int,
@@ -68,20 +68,20 @@ CREATE TABLE IF NOT EXISTS public.Accomodation(
 	FOREIGN KEY (object_id) REFERENCES public.Object (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.Furniture_Accomodation(
+CREATE TABLE IF NOT EXISTS public.Furniture_Accommodation(
 	id SERIAL PRIMARY KEY,
 	quantity int,
 	furniture_id int,
-	accomodation_id int,
+	accommodation_id int,
 	FOREIGN KEY (furniture_id) REFERENCES public.Furniture (id),
-	FOREIGN KEY (accomodation_id) REFERENCES public.Accomodation (id)
+	FOREIGN KEY (accommodation_id) REFERENCES public.Accommodation (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.Reservation_Accomodation(
+CREATE TABLE IF NOT EXISTS public.Reservation_Accommodation(
 	id SERIAL PRIMARY KEY,
-	accomodations_id int,
+	accommodations_id int,
 	reservations_id int,
-	FOREIGN KEY (accomodations_id) REFERENCES public.Accomodation (id),
+	FOREIGN KEY (accommodations_id) REFERENCES public.Accommodation (id),
 	FOREIGN KEY (reservations_id) REFERENCES public.Reservation (id)
 );
 
@@ -95,8 +95,10 @@ CREATE TABLE IF NOT EXISTS public.Comment(
 	plus_number int,
 	minus_number int,
 	residents int,
+	object_id int NOT NULL,
 	owner_id int NOT NULL,
 	reservation_id int NOT NULL,
+	FOREIGN KEY (object_id) REFERENCES public.Object (id),
 	FOREIGN KEY (reservation_id) REFERENCES public.Reservation (id),
 	FOREIGN KEY (owner_id) REFERENCES public.User (id)
 );
@@ -111,8 +113,8 @@ CREATE TABLE IF NOT EXISTS public.Comment_Category(
 	score int NOT NULL,
 	categories_id int,
 	comments_id int,
-	FOREIGN KEY (categories_id) REFERENCES public.Category (id),
-	FOREIGN KEY (comments_id) REFERENCES public.Comment (id)
+	FOREIGN KEY (categories_id) REFERENCES public.Category (id) ON DELETE CASCADE,
+	FOREIGN KEY (comments_id) REFERENCES public.Comment (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public.Service(

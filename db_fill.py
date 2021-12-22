@@ -78,17 +78,17 @@ class DbFiller:
                      )
             )
             
-    def __create_accomodation(self):
+    def __create_accommodation(self):
         checkin_time = str(random.randint(6, 20)) + ':00'
         people_number = random.randint(1, 5)
         area = random.randint(20, 100)
         price = random.randrange(500, 10000, 100)
-        photo = f'/src/accomodation/photos/{self.faker.word()}.jpg'
+        photo = f'/src/accommodation/photos/{self.faker.word()}.jpg'
         self.cursor.execute('SELECT * FROM public.object')
         objects = self.cursor.fetchall()
         object_id = random.choice(objects)[0]
         self.cursor.execute(
-            'INSERT INTO public.accomodation \
+            'INSERT INTO public.accommodation \
                 (checkin_time, people_number, area, price, photo, object_id)\
                 VALUES (%s, %s, %s, %s, %s, %s)',
                 (checkin_time, people_number, area, price, photo, object_id)
@@ -97,6 +97,16 @@ class DbFiller:
     def __create_comment(self):
         self.cursor.execute('SELECT * FROM public.reservation')
         reservation = random.choice(self.cursor.fetchall())
+        self.cursor.execute(
+            'SELECT reservation_accommodation.accommodations_id FROM public.reservation_accommodation WHERE reservations_id=%s',
+            (reservation[0], )
+            )
+        accommodation_id = self.cursor.fetchall()[0]
+        self.cursor.execute(
+            'SELECT * FROM public.accommodation WHERE id = %s',
+            (accommodation_id, )
+        )
+        object_id = self.cursor.fetchall()[0][7]
         user_id = reservation[4]
         rating = float(random.randint(0, 9)) + float(random.randint(0,9))/10
         comment_delay = random.randint(1, 30)
@@ -114,9 +124,9 @@ class DbFiller:
         self.cursor.execute(
             'INSERT INTO public.comment \
                 (photo, created_at, rating, pluses, minuses, plus_number, minus_number,\
-                residents, owner_id, reservation_id)\
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-            (photo, created_at, rating, pluses, minuses, plus_number, minus_number, residents, user_id, reservation[0])
+                residents, owner_id, reservation_id, object_id)\
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+            (photo, created_at, rating, pluses, minuses, plus_number, minus_number, residents, user_id, reservation[0], object_id)
         )
 
         
@@ -141,7 +151,7 @@ class DbFiller:
             for category in f:
                 self.cursor.execute(
                     'INSERT INTO public.category (name) VALUES (%s)',
-                    (category, )
+                    (category.strip(), )
                 )
 
     def __load_services(self):
@@ -149,7 +159,7 @@ class DbFiller:
             for service in f:
                 self.cursor.execute(
                     'INSERT INTO public.service (name) VALUES (%s)',
-                    (service, )
+                    (service.strip(), )
                 )
     
     def __load_object_types(self):
@@ -157,7 +167,7 @@ class DbFiller:
             for type_ in f:
                 self.cursor.execute(
                     'INSERT INTO public.object_type (name) VALUES (%s)',
-                    (type_, )
+                    (type_.strip(), )
                 )
 
     def __load_facilities(self):
@@ -168,14 +178,14 @@ class DbFiller:
                 if facility.startswith('~'):
                     self.cursor.execute(
                         'INSERT INTO public.facility_type (name) VALUES (%s)',
-                        (facility[1:], )
+                        (facility[1:].strip(), )
                     )
                     last_id+=1
                 else:
                     self.cursor.execute(
                         'INSERT INTO public.facility (name, facility_type_id) VALUES\
                             (%s, %s)',
-                            (facility, last_id)
+                            (facility.strip(), last_id)
                     )
                     
     def __load_furniture(self):
@@ -183,7 +193,7 @@ class DbFiller:
             for furniture in f:
                 self.cursor.execute(
                     'INSERT INTO public.furniture (name) VALUES (%s)',
-                    (furniture, )
+                    (furniture.strip(), )
                 )
     
     def __create_mtm_comment_category(self):
@@ -207,7 +217,7 @@ class DbFiller:
         self.cursor.execute('SELECT id FROM public.facility')
         facility_ids = self.cursor.fetchall()
         for object_id in objects_ids:
-            quantity_facility = random.randint(0, 10)
+            quantity_facility = random.randint(0, 30)
             facilities_ids_rnd = random.choices(facility_ids, k=quantity_facility)
             for facility_id in facilities_ids_rnd:
                 self.cursor.execute(
@@ -216,34 +226,34 @@ class DbFiller:
                     (facility_id[0], object_id[0])
                 )
 
-    def __create_mtm_furniture_accomodation(self):
-        self.cursor.execute('SELECT id FROM public.accomodation')
-        accomodation_ids = self.cursor.fetchall()
+    def __create_mtm_furniture_accommodation(self):
+        self.cursor.execute('SELECT id FROM public.accommodation')
+        accommodation_ids = self.cursor.fetchall()
         self.cursor.execute('SELECT id FROM public.furniture')
         furniture_ids = self.cursor.fetchall()
-        for accomodation_id in accomodation_ids:
+        for accommodation_id in accommodation_ids:
             quantity_furniture = random.randint(1, 4)
             furniture_ids_rnd = random.choices(furniture_ids, k=quantity_furniture)
             for furniture_id in furniture_ids_rnd:
                 self.cursor.execute(
-                    'INSERT INTO public.furniture_accomodation (quantity, furniture_id, accomodation_id)\
+                    'INSERT INTO public.furniture_accommodation (quantity, furniture_id, accommodation_id)\
                         VALUES (%s, %s, %s)',
-                    (random.randint(1,3), furniture_id[0], accomodation_id[0])
+                    (random.randint(1,3), furniture_id[0], accommodation_id[0])
                 )
 
-    def __create_mtm_reservation_accomodation(self):
-        self.cursor.execute('SELECT id FROM public.accomodation')
-        accomodation_ids = self.cursor.fetchall()
+    def __create_mtm_reservation_accommodation(self):
+        self.cursor.execute('SELECT id FROM public.accommodation')
+        accommodation_ids = self.cursor.fetchall()
         self.cursor.execute('SELECT id FROM public.reservation')
         reservaiton_ids = self.cursor.fetchall()
         for reservation_id in reservaiton_ids:
-            quantity_accomodation = random.randint(1, 2)
-            accomodation_ids_rnd = random.choices(accomodation_ids, k=quantity_accomodation)
-            for accomodation_id in accomodation_ids_rnd:
+            quantity_accommodation = random.randint(1, 2)
+            accommodation_ids_rnd = random.choices(accommodation_ids, k=quantity_accommodation)
+            for accommodation_id in accommodation_ids_rnd:
                 self.cursor.execute(
-                    'INSERT INTO public.reservation_accomodation (reservations_id, accomodations_id)\
+                    'INSERT INTO public.reservation_accommodation (reservations_id, accommodations_id)\
                         VALUES (%s, %s)',
-                    (reservation_id[0], accomodation_id[0])
+                    (reservation_id[0], accommodation_id[0])
                 )
 
     def __create_mtm_service_object(self):
@@ -274,20 +284,20 @@ class DbFiller:
         for _ in range(object_qantity):
             self.__create_object()
         for _ in range(object_qantity * random.randint(2,4)):
-            self.__create_accomodation()
+            self.__create_accommodation()
         for _ in range(user_qantity * 2):
             self.__create_reservation()
-        for _ in range(int(user_qantity / 3)):
+        self.__create_mtm_reservation_accommodation()
+        for _ in range(int(object_qantity * 3)):
             self.__create_comment()
         self.__create_mtm_comment_category()
         self.__create_mtm_facility_object()
-        self.__create_mtm_furniture_accomodation()
-        self.__create_mtm_reservation_accomodation()
+        self.__create_mtm_furniture_accommodation()
         self.__create_mtm_service_object()
   
 def main():
     filler = DbFiller();
-    filler.fill(200, 75)
+    filler.fill(500, 150)
     # filler.load_comment_categories()
     # filler.load_facilities()
     # filler.load_object_types()
